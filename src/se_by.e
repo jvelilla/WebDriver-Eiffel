@@ -12,6 +12,7 @@ inherit
 create default_create
 
 feature -- Access
+
 	id ( value : STRING_32 ) : STRING_32
 			-- return a STRING representing a JSON
 			-- with strategy by `id' and value `value'
@@ -113,6 +114,7 @@ feature -- Access
 
 
 feature -- Query
+
 	has_correct_stategy (data: STRING_32; strategy : STRING_32) : BOOLEAN
 		do
 			if attached {JSON_OBJECT} string_to_json(data) as l_json then

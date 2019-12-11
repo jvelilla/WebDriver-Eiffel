@@ -625,6 +625,16 @@ feature -- Commands
 			Result := new_response (a_session_id, resp)
 		end
 
+	element_rect (a_session_id: STRING_32; id: STRING_32): SE_RESPONSE
+		require
+			selinum_server_available: is_available
+		local
+			resp: HTTP_CLIENT_RESPONSE
+		do
+			resp := execute_get (cmd_session_element_rect (a_session_id, id))
+			Result := new_response (a_session_id, resp)
+		end
+
 	retrieve_browser_orientation (a_session_id: STRING_32): SE_RESPONSE
 		require
 			selinum_server_available: is_available

@@ -8,7 +8,7 @@ class
 
     -- TODO Check endpoints:
     -- https://w3c.github.io/webdriver/#endpoints
-    
+
 feature
 
 	cmd_ping: STRING = ""
@@ -336,6 +336,18 @@ feature
 			Result.replace_substring_all ("$sessionId", sessionId)
 			Result.replace_substring_all ("$id", id)
 		end
+
+
+	cmd_session_element_rect_templ: STRING = "session/$sessionId/element/$id/rect"
+
+	cmd_session_element_rect (sessionId: STRING_32; id: STRING_32): STRING_32
+		do
+			create Result.make_from_string (cmd_session_element_rect_templ)
+			Result.replace_substring_all ("$sessionId", sessionId)
+			Result.replace_substring_all ("$id", id)
+		end
+
+
 
 	cmd_session_keys_tmpl: STRING = "session/$sessionId/keys"
 
@@ -673,5 +685,8 @@ feature
 			create Result.make_from_string (cmd_session_application_cache_tmpl)
 			Result.replace_substring_all ("$sessionId", sessionId)
 		end
+
+
+
 
 end

@@ -1,19 +1,21 @@
 note
 	description: "Object representation of JSON response describing the state of the server"
-	author: ""
 	date: "$Date$"
 	revision: "$Revision$"
-	EIS: "name=status", "protocol=http", "src=https://code.google.com/p/selenium/wiki/JsonWireProtocol#GET_/status"
+	EIS: "name=status", "protocol=http", "src=https://w3c.github.io/webdriver/#dfn-status"
 
 class
 	SE_STATUS
+
 inherit
+
 	ANY
 		redefine
 			out
 		end
 
 feature -- Access
+
 	status: INTEGER_32
     session_id: detachable STRING_32
 	state: detachable STRING_32
@@ -22,6 +24,7 @@ feature -- Access
     hash_code: detachable STRING_32
 
 feature -- Change Element
+
 	set_status (a_status : INTEGER_32)
 		do
 			status := a_status

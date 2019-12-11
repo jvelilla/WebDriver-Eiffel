@@ -1,4 +1,4 @@
-note
+﻿note
 	description: "[
 		Object Representing the JsonWireProtocol
 	]"
@@ -192,6 +192,8 @@ feature -- Commands
 			--		:sessionId - ID of the session to route the command to.
 			--	JSON Parameters:
 			--		ms - {number} The amount of time, in milliseconds, that time-limited commands are permitted to run.
+		obsolete
+			"Cannot call non W3C standard command. [2020-05-31]."
 		local
 			l_timeout: SE_TIMEOUT_TYPE
 			resp: SE_RESPONSE
@@ -214,6 +216,8 @@ feature -- Commands
 			--		:sessionId - ID of the session to route the command to.
 			--	JSON Parameters:
 			--		ms - {number} The amount of time to wait, in milliseconds. This value has a lower bound of 0.
+		obsolete
+			"Cannot call non W3C standard command. [2020-05-31]."
 		local
 			l_timeout: SE_TIMEOUT_TYPE
 			resp: SE_RESPONSE
@@ -940,9 +944,15 @@ feature -- Commands
 				resp := commnad_executor.search_element (a_session_id, strategy)
 				check_response (resp)
 				if not has_error then
-					if attached resp.value as l_value and then attached {JSON_OBJECT} string_to_json (l_value) as ll_value and then attached {JSON_STRING} ll_value.item ("ELEMENT") as l_elem then
-						create Result.make (l_elem.item, Current, a_session_id)
+					if attached resp.value as l_value and then attached {JSON_OBJECT} string_to_json (l_value) as ll_value then
+						check one_element: ll_value.count  = 1 end
+						across ll_value as ic  loop
+							if attached {JSON_STRING} ic.item as l_item then
+								create Result.make (l_item.item, Current, a_session_id)
+							end
+						end
 					end
+
 				end
 			end
 		end
@@ -988,9 +998,14 @@ feature -- Commands
 						until
 							index > l_json_array.count
 						loop
-							if attached {JSON_OBJECT} l_json_array.i_th (index) as json_str and then attached {JSON_STRING} json_str.item ("ELEMENT") as l_elem then
-								Result.force (create {WEB_ELEMENT}.make (l_elem.item, Current, a_session_id))
+							if attached {JSON_OBJECT} l_json_array.i_th (index) as ll_value then
+								across ll_value as ic  loop
+									if attached {JSON_STRING} ic.item as l_item then
+										Result.force (create {WEB_ELEMENT}.make (l_item.item, Current, a_session_id))
+									end
+								end
 							end
+
 							index := index + 1
 						end
 					end
@@ -1467,11 +1482,25 @@ feature -- Commands
 				check_response (resp)
 				if not has_error then
 					if attached resp.value as l_value and then attached {JSON_OBJECT} string_to_json (l_value) as l_json_object then
-						if attached l_json_object.item ("x") as l_x then
-							Result.set_x (l_x.representation.to_integer_32)
+						if attached {JSON_NUMBER} l_json_object.item ("x") as l_x then
+							if l_x.is_natural then
+								Result.set_x (l_x.natural_64_item.as_integer_32)
+							elseif l_x.is_double then
+								Result.set_x (l_x.double_item.truncated_to_integer)
+							else
+								check is_integer: l_x.is_integer end
+								Result.set_x (l_x.integer_64_item.as_integer_32)
+							end
 						end
-						if attached l_json_object.item ("y") as l_y then
-							Result.set_y (l_y.representation.to_integer_32)
+						if attached {JSON_NUMBER} l_json_object.item ("y") as l_y then
+							if l_y.is_natural then
+								Result.set_y (l_y.natural_64_item.as_integer_32)
+							elseif l_y.is_double then
+								Result.set_y (l_y.double_item.truncated_to_integer)
+							else
+								check is_integer: l_y.is_integer end
+								Result.set_y (l_y.integer_64_item.as_integer_32)
+							end
 						end
 					end
 				end
@@ -1567,11 +1596,59 @@ feature -- Commands
 			end
 		end
 
+
+	element_rect (a_session_id: STRING_32; an_id: STRING_32): SE_RECTANGLE
+			--	GET 	/session/{session id}/element/{element id}/rect
+			--  The Get Element Rect command returns the dimensions and coordinates of the given web element. The returned value is a dictionary with the following members:
+			--  x: X axis position of the top-left corner of the web element relative to the current browsing context’s document element in CSS pixels.
+			--  y: Y axis position of the top-left corner of the web element relative to the current browsing context’s document element in CSS pixels.
+			--  height: Height of the web element’s bounding rectangle in CSS pixels.
+			--  width:  Width of the web element’s bounding rectangle in CSS pixels.
+		local
+			resp: SE_RESPONSE
+		do
+			create Result
+			if commnad_executor.is_available then
+				resp := commnad_executor.element_rect (a_session_id, an_id)
+				check_response (resp)
+				if not has_error then
+					if attached resp.value as l_value and then attached {JSON_OBJECT} string_to_json (l_value) as l_json_object then
+						if attached {JSON_NUMBER} l_json_object.item ("x") as l_x then
+							if l_x.is_natural then
+								Result.set_x (l_x.natural_64_item.as_integer_32)
+							elseif l_x.is_double then
+								Result.set_x (l_x.double_item.truncated_to_integer)
+							else
+								check is_integer: l_x.is_integer end
+								Result.set_x (l_x.integer_64_item.as_integer_32)
+							end
+						end
+						if attached {JSON_NUMBER} l_json_object.item ("y") as l_y then
+							if l_y.is_natural then
+								Result.set_y (l_y.natural_64_item.as_integer_32)
+							elseif l_y.is_double then
+								Result.set_y (l_y.double_item.truncated_to_integer)
+							else
+								check is_integer: l_y.is_integer end
+								Result.set_y (l_y.integer_64_item.as_integer_32)
+							end
+						end
+						if attached l_json_object.item ("width") as l_width then
+							Result.set_width (l_width.representation.to_natural)
+						end
+						if attached l_json_object.item ("height") as l_height then
+							Result.set_height (l_height.representation.to_natural)
+						end
+					end
+				end
+			end
+		end
+
 	retrieve_browser_orientation (a_session_id: STRING_32): detachable STRING_32
 			--	GET /session/:sessionId/orientation
 			--	Get the current browser orientation. The server should return a valid orientation value as defined in ScreenOrientation: {LANDSCAPE|PORTRAIT}.
 			--	URL Parameters:
-			--		:sessionId - ID of the session to route the command to.
+			--		:sessionId  -ID of the session to route the command to.
 			--	Returns:
 			--		{string} The current browser orientation corresponding to a value defined in ScreenOrientation: {LANDSCAPE|PORTRAIT}.
 			--	Potential Errors:
@@ -2286,7 +2363,22 @@ feature {NONE} -- Implementation
 				create Result.make (33, "SessionNotCreatedException", "A new session could not be created.")
 			when 34 then
 				create Result.make (34, "MoveTargetOutOfBounds", "Target provided for a move action is out of bounds.")
+			when 51 then
+				create Result.make (51, "InvalidXpathSelector", "Invalid selector.")
+			when 52 then
+				create Result.make (52, "InvalidXpathSelectorReturnTyper", "Invalid selector.")
+			when 60 then
+				create Result.make (60, "ELEMENT_NOT_INTERACTABLE", "element not interactable")
+			when 61 then
+				create Result.make (61, "INVALID_ARGUMENT", "invalid argument")
+			when 62 then
+				create Result.make (62, "NO_SUCH_COOKIE", "no such cookie")
+			when 63 then
+				create Result.make (63, "UNABLE_TO_CAPTURE_SCREEN", "unable to capture screen")
+			when 64 then
+				create Result.make (64, "ELEMENT_CLICK_INTERCEPTED", "element click intercepted")
 			end
+
 		end
 
 end

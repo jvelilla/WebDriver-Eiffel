@@ -5,6 +5,7 @@ note
 
 class
 	SE_DIMENSION
+
 create
 	default_create,
 	make_with_values
@@ -18,6 +19,7 @@ feature -- Initialization
 		end
 
 feature -- Access
+
 	--{ width: number, height: number} The size of the window.
 	width : NATURAL_32
 	height : NATURAL_32
@@ -25,6 +27,7 @@ feature -- Access
 
 
 feature -- Change Element
+
 	set_width (a_width : NATURAL_32)
 			--Set width to `a_width'
 		do
@@ -34,8 +37,11 @@ feature -- Change Element
 		end
 
 	set_height (a_height : NATURAL_32)
+			--Set height to `a_height'
 		do
 			height := a_height
+		ensure
+			height_set: height = a_height
 		end
 
 

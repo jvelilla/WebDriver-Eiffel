@@ -171,7 +171,7 @@ feature -- Test routines
 			if attached wire_protocol.create_session_with_desired_capabilities (capabilities) as l_session then
 				assert ("No error", not wire_protocol.has_error)
 				wire_protocol.set_session_timeouts_async_script (l_session.session_id, 1)
-				assert ("Has no error", not wire_protocol.has_error)
+				assert ("Has error, Cannot call non W3C standard command", wire_protocol.has_error)
 			end
 		end
 
@@ -185,7 +185,7 @@ feature -- Test routines
 			if attached wire_protocol.create_session_with_desired_capabilities (capabilities) as l_session then
 				assert ("No error", not wire_protocol.has_error)
 				wire_protocol.set_session_timeouts_implicit_wait (l_session.session_id, 1)
-				assert ("Has no error", not wire_protocol.has_error)
+				assert ("Has error, Cannot call non W3C standard command", wire_protocol.has_error)
 			end
 		end
 
@@ -247,7 +247,7 @@ feature -- Test routines
 				wire_protocol.navigate_to_url (l_session.session_id, "https://www.google.com")
 				assert ("Has no error", not wire_protocol.has_error)
 				if attached wire_protocol.retrieve_url (l_session.session_id) as l_url then
-					assert("Expected url", l_url.same_string_general ("%"https://www.google.com/%""))
+					assert("Expected url", l_url.same_string_general ("https://www.google.com/"))
 				end
 			end
 		end
@@ -266,7 +266,7 @@ feature -- Test routines
 				assert ("Has no error", not wire_protocol.has_error)
 				wire_protocol.navigate_to_url (l_session.session_id,"https://www.infoq.com")
 				assert ("Has no error", not wire_protocol.has_error)
-				wire_protocol.navigate_to_url (l_session.session_id,"https://espanol.yahoo.com/?p=us")
+				wire_protocol.navigate_to_url (l_session.session_id,"https://eiffel.org")
 				assert ("Has no error", not wire_protocol.has_error)
 
 				--back
@@ -275,7 +275,7 @@ feature -- Test routines
 
 				if attached wire_protocol.retrieve_url (l_session.session_id) as l_back_url then
 					assert ("Has no error", not wire_protocol.has_error)
-					assert ("Expected infoq", l_back_url.same_string_general ("%"https://www.infoq.com/%""))
+					assert ("Expected infoq", l_back_url.same_string_general ("https://www.infoq.com/"))
 				end
 
 				-- forward
@@ -284,7 +284,7 @@ feature -- Test routines
 
 				if attached wire_protocol.retrieve_url (l_session.session_id) as l_forward_url then
 					assert ("Has no error", not wire_protocol.has_error)
-					assert ("Expected yahoo",l_forward_url.same_string_general ("%"https://espanol.yahoo.com/?p=us%""))
+					assert ("Expected eiffel.org",l_forward_url.same_string_general ("https://www.eiffel.org/"))
 				end
 
 			end
@@ -309,6 +309,53 @@ feature -- Test routines
 				end
 			end
 		end
+
+
+	test_find_element_by_id
+		local
+			capabilities : SE_CAPABILITIES
+		do
+			create capabilities.make
+			if attached wire_protocol.create_session_with_desired_capabilities (capabilities) as l_session then
+				if attached wire_protocol.ime_available_engines (l_session.session_id) as l_ime_available_engines then
+					assert ("Has no error", not wire_protocol.has_error)
+					across l_ime_available_engines as item loop
+						print (item)
+					end
+				else
+					assert ("Has error :", wire_protocol.has_error)
+					if attached wire_protocol.last_error as l_error then
+						assert ("Status 13", l_error.code = 13)
+					end
+				end
+			end
+		end
+
+
+	test_chrome_find_element_by_id
+		local
+			web_driver: WEB_DRIVER
+			wait: WEB_DRIVER_WAIT
+		do
+				--Create a new instance of a Web driver
+			create web_driver.make
+
+				-- Start session with chrome
+			web_driver.start_session_chrome
+
+				-- Go to EiffelRoom login page
+			web_driver.to_url ("http://www.eiffel.org")
+
+				-- Find the user name, password element by its id and submit
+			if attached {WEB_ELEMENT} web_driver.find_element ((create {SE_BY}).id ("block-codeboard_demo")) as l_header then
+				assert ("Expected WebElement", True)
+			else
+				assert  ("Not expected", False)
+			end
+				-- close the window
+			web_driver.window_close
+		end
+
 
 
 feature {NONE}-- Implementation

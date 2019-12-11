@@ -129,6 +129,12 @@ feature -- Web Element API
 			api.element_submit (session_id, element)
 		end
 
+
+	get_rect: SE_RECTANGLE
+		do
+			Result := api.element_rect (session_id, element)
+		end
+
 feature {NONE, SE_COORDINATES} -- Implementation
 
 	api : SE_JSON_WIRE_PROTOCOL

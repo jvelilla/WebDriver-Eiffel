@@ -37,7 +37,11 @@ feature -- Conversion
 					Result.set_status (l_status.integer_64_item.to_integer_32)
 				end
 				if attached {JSON_VALUE}  j.item (value_key) as l_item then
-					Result.set_value(l_item.representation)
+					if attached {JSON_STRING} l_item as l_str then
+						Result.set_value (l_str.unescaped_string_32)
+					else
+						Result.set_value(l_item.representation)
+					end
 				end
 			end
 		end
